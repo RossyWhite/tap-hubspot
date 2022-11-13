@@ -60,6 +60,7 @@ CONFIG = {
     "refresh_token": None,
     "start_date": None,
     "hapikey": None,
+    "private_app_access_token": None,
     "include_inactives": None,
 }
 
@@ -289,13 +290,17 @@ def get_params_and_headers(params):
     """
     params = params or {}
     hapikey = CONFIG['hapikey']
-    if hapikey is None:
+    private_app_access_token = CONFIG['private_app_access_token']
+
+    if hapikey:
+        params['hapikey'] = hapikey
+        headers = {}
+    elif private_app_access_token:
+        headers = {'Authorization': 'Bearer {}'.format(CONFIG['private_app_access_token'])}
+    else:
         if CONFIG['token_expires'] is None or CONFIG['token_expires'] < datetime.datetime.utcnow():
             acquire_access_token_from_refresh_token()
         headers = {'Authorization': 'Bearer {}'.format(CONFIG['access_token'])}
-    else:
-        params['hapikey'] = hapikey
-        headers = {}
 
     if 'user_agent' in CONFIG:
         headers['User-Agent'] = CONFIG['user_agent']
